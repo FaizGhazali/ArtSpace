@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ArtSpaceLayout() {
-    var leader by remember { mutableStateOf("1")}
+    var leader by remember { mutableStateOf(1)}
     var country by remember { mutableStateOf("1")}
     var country_pic by remember { mutableStateOf("1")}
 
@@ -86,7 +86,8 @@ fun ArtSpaceLayout() {
                     .weight(1f) // Make the nested columns occupy equal space
                     .border(1.dp, Color.Red),
 
-                ) {
+                ) //sini
+            {
                 val image = painterResource(R.drawable.country_1_pic)
                 Image(
                     painter = image, contentDescription = "Kim Jong Un",
@@ -113,15 +114,17 @@ fun ArtSpaceLayout() {
                         .padding(horizontal = 0.dp, vertical = 0.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(R.string.leader_1),
-                        style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
-                    )
-                    Text(
-                        text = stringResource(R.string.country_1),
-                        style = TextStyle(fontSize = 12.sp)
-                    )
+                )
+                //sini
+                {
+                    when(leader){
+                        1->{
+                            ArtText(
+                                textLeaderResourceId =R.string.leader_1,
+                                textCountryResourceId=R.string.country_1
+                            )
+                        }
+                    }
                 }
             }
             Column(
@@ -151,6 +154,29 @@ fun ArtSpaceLayout() {
             }
         }
     }
+}
+@Composable
+fun ArtText(
+    textLeaderResourceId: Int,
+    textCountryResourceId: Int,
+){
+    Text(
+        text = stringResource(textLeaderResourceId),
+        style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
+    )
+    Text(
+        text = stringResource(textCountryResourceId),
+        style = TextStyle(fontSize = 12.sp)
+    )
+
+}
+
+@Composable
+fun ArtImage(
+    drawableResourceId : Int,
+    contentDescriptionResourceId : Int,
+){
+
 }
 
 @Preview(showBackground = true)
