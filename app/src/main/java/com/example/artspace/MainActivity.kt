@@ -1,5 +1,7 @@
 package com.example.artspace
 
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 
 
 class MainActivity : ComponentActivity() {
+    private var mediaPlayer: MediaPlayer? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -48,15 +51,44 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
+                    ArtSpaceLayout()
                 }
             }
         }
+    }
+    override fun onStart() {
+        super.onStart()
+        startMediaPlayer()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        releaseMediaPlayer()
+    }
+
+    private fun startMediaPlayer() {
+        mediaPlayer = MediaPlayer().apply {
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build()
+            )
+            setDataSource("https://faizghazali.hopto.org:6969/play")
+            prepareAsync()
+            setOnPreparedListener { start() }
+        }
+    }
+
+    private fun releaseMediaPlayer() {
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 }
 
 @Composable
 fun ArtSpaceLayout() {
+    var audioUrl by remember { mutableStateOf("https://faizghazali.hopto.org:6969/play") }
     var leader by remember { mutableStateOf(1)}
     var country by remember { mutableStateOf("1")}
     var country_pic by remember { mutableStateOf("1")}
@@ -178,6 +210,8 @@ fun ArtImage(
 ){
 
 }
+
+
 
 @Preview(showBackground = true)
 @Composable
