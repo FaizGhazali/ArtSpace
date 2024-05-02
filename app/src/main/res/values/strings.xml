@@ -2,4 +2,6 @@
     <string name="app_name">ArtSpace</string>
     <string name="leader_1">KIM JONG UN</string>
     <string name="country_1">NORTH KOREA</string>
+    <string name="leader_2">Narendra Modi</string>
+    <string name="country_2">India</string>
 </resources>

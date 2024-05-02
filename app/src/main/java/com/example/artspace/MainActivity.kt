@@ -90,8 +90,16 @@ class MainActivity : ComponentActivity() {
 fun ArtSpaceLayout() {
     var audioUrl by remember { mutableStateOf("https://faizghazali.hopto.org:6969/play") }
     var leader by remember { mutableStateOf(1)}
-    var country by remember { mutableStateOf("1")}
-    var country_pic by remember { mutableStateOf("1")}
+
+    // Define a list of audio URLs for each leader (replace these with your actual URLs)
+    val audioUrls = listOf(
+        "https://faizghazali.hopto.org:6969/play", // URL for leader 1
+        "https://faizghazali.hopto.org:6969/play", // URL for leader 2
+        // Add more URLs for other leaders as needed
+    )
+
+    
+
 
 
     Column(
@@ -156,6 +164,12 @@ fun ArtSpaceLayout() {
                                 textCountryResourceId=R.string.country_1
                             )
                         }
+                        2->{
+                            ArtText(
+                                textLeaderResourceId = R.string.leader_2,
+                                textCountryResourceId = R.string.country_2
+                            )
+                        }
                     }
                 }
             }
@@ -172,12 +186,12 @@ fun ArtSpaceLayout() {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(onClick = { /* Button 1 action */ },
+                    Button(onClick = { leader = if (leader > 1) leader - 1 else 2 },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                         shape = RectangleShape) {
                         Text(text = "Previous")
                     }
-                    Button(onClick = { /* Button 2 action */ },
+                    Button(onClick = { leader = if (leader < 2) leader + 1 else 1 },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                         shape = RectangleShape) {
                         Text(text = "Next")
