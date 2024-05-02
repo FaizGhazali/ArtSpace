@@ -3,6 +3,7 @@ package com.example.artspace
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.provider.MediaStore.Audio.Media
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -32,16 +33,19 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import java.time.temporal.ValueRange
 
 
 class MainActivity : ComponentActivity() {
-    private var mediaPlayer: MediaPlayer? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -56,40 +60,16 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    override fun onStart() {
-        super.onStart()
-        startMediaPlayer()
-    }
 
-    override fun onStop() {
-        super.onStop()
-        releaseMediaPlayer()
-    }
-
-    private fun startMediaPlayer() {
-        mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build()
-            )
-            setDataSource("https://faizghazali.hopto.org:6969/play")
-            prepareAsync()
-            setOnPreparedListener { start() }
-        }
-    }
-
-    private fun releaseMediaPlayer() {
-        mediaPlayer?.release()
-        mediaPlayer = null
-    }
 }
 
 @Composable
 fun ArtSpaceLayout() {
+    var mediaPlayer: MediaPlayer? = null
     var audioUrl by remember { mutableStateOf("https://faizghazali.hopto.org:6969/play") }
-    var leader by remember { mutableStateOf(1)}
+
+
+    var leader by remember { mutableStateOf(1) }
 
     // Define a list of audio URLs for each leader (replace these with your actual URLs)
     val audioUrls = listOf(
@@ -98,7 +78,21 @@ fun ArtSpaceLayout() {
         // Add more URLs for other leaders as needed
     )
 
-    
+
+    fun releaseMediaPlayer() {
+        mediaPlayer?.apply {
+            stop()
+            reset()
+            release()
+        }
+
+    }
+    DisposableEffect(Unit) {
+        startMediaPlayer()
+        onDispose {
+            releaseMediaPlayer()
+        }
+    }
 
 
 
@@ -157,18 +151,26 @@ fun ArtSpaceLayout() {
                 )
                 //sini
                 {
-                    when(leader){
-                        1->{
+                    when (leader) {
+                        1 -> {
                             ArtText(
-                                textLeaderResourceId =R.string.leader_1,
-                                textCountryResourceId=R.string.country_1
+                                textLeaderResourceId = R.string.leader_1,
+                                textCountryResourceId = R.string.country_1
                             )
                         }
-                        2->{
+
+                        2 -> {
                             ArtText(
                                 textLeaderResourceId = R.string.leader_2,
                                 textCountryResourceId = R.string.country_2
                             )
+                        }
+                        3->{
+                            ArtText(
+                                textLeaderResourceId = R.string.leader_2,
+                                textCountryResourceId = R.string.country_2
+                            )
+
                         }
                     }
                 }
@@ -186,14 +188,32 @@ fun ArtSpaceLayout() {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(onClick = { leader = if (leader > 1) leader - 1 else 2 },
+                    Button(
+                        onClick = { releaseMediaPlayer()},
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                        shape = RectangleShape) {
+                        shape = RectangleShape
+                    ) {
                         Text(text = "Previous")
                     }
-                    Button(onClick = { leader = if (leader < 2) leader + 1 else 1 },
+                    Button(
+                        onClick = {
+                            mediaPlayer?.apply {
+                                stop()
+                                reset()
+                                release()
+                            }
+
+
+                            audioUrl = audioUrls[leader - 1]
+                            leader = if (leader < 3) leader + 1 else 1
+
+
+
+
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                        shape = RectangleShape) {
+                        shape = RectangleShape
+                    ) {
                         Text(text = "Next")
                     }
                 }
@@ -201,11 +221,31 @@ fun ArtSpaceLayout() {
         }
     }
 }
+
+
+// Function to start playing the media player with the current audioUrl
+@Composable
+fun startMediaPlayer( mediaPlayer:MediaPlayer) {
+    mediaPlayer?.release() // Release any existing media player
+    mediaPlayer = null // Reset media player instance.
+
+    mediaPlayer = MediaPlayer().apply {
+        setAudioAttributes(
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build()
+        )
+        setDataSource(audioUrl)
+        prepareAsync()
+        setOnPreparedListener { start() }
+    }
+}
 @Composable
 fun ArtText(
     textLeaderResourceId: Int,
     textCountryResourceId: Int,
-){
+) {
     Text(
         text = stringResource(textLeaderResourceId),
         style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
@@ -219,12 +259,11 @@ fun ArtText(
 
 @Composable
 fun ArtImage(
-    drawableResourceId : Int,
-    contentDescriptionResourceId : Int,
-){
+    drawableResourceId: Int,
+    contentDescriptionResourceId: Int,
+) {
 
 }
-
 
 
 @Preview(showBackground = true)
